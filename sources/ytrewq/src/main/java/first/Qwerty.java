@@ -1,0 +1,73 @@
+package first;
+
+
+import java.io.File;
+import java.util.Date;
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+
+public class Qwerty {
+
+	public static void main(String[] args) {
+		Scanner scan = new Scanner(System.in);
+		Long income = 0L;
+		Timer timer = new Timer();
+		
+		System.out.print("Enter time:");
+		
+		income = scan.nextLong();
+		
+		timer.scheduleAtFixedRate(new TimerTask() {
+				@Override
+				public void run() {
+		        	System.out.println("System time: \t" + new Date());
+		        	completeTask();
+		    	}
+		 
+		    	private void completeTask() {
+		        	try {
+		            	// допустим, выполнение займет 20 секунд
+		            	Thread.sleep(1000);
+//		        		playMusic();
+		        	} catch (InterruptedException e) {
+		        		e.printStackTrace();
+		        	}
+		    	}
+		    	
+//		    	private void playMusic() {
+//		    		String bip = "Believer.mp3";
+//		    		Media hit = new Media(new File(bip).toURI().toString());
+//		    		MediaPlayer mediaPlayer = new MediaPlayer(hit);
+//		    		mediaPlayer.play();
+//		    	}
+			},0, 1*1000);
+		
+		// вызываем cancel() через какое-то время
+        try {
+            Thread.sleep(income * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        timer.cancel();
+        System.out.println("TimerTask cancel");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+        playMusic();
+        
+	}
+	
+	private static void playMusic() {
+		String bip = "Believer.mp3";
+		Media hit = new Media(new File(bip).toURI().toString());
+		MediaPlayer mediaPlayer = new MediaPlayer(hit);
+		mediaPlayer.play();
+	}
+
+}
