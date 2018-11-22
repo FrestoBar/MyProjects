@@ -1,73 +1,106 @@
 package first;
 
-
 import java.io.File;
-import java.util.Date;
 import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
+
+import javafx.application.Application;
+
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
-public class Qwerty {
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+
+public class Qwerty extends javafx.application.Application {
+
+	private static MediaPlayer mediaPlayer;
+	private static File file;
+	private static final FileChooser fileChooser = new FileChooser();
+	private static Long income = 0L;
+	private static Scanner scan = new Scanner(System.in);
+	private static int sec = 1;
 
 	public static void main(String[] args) {
-		Scanner scan = new Scanner(System.in);
-		Long income = 0L;
-		Timer timer = new Timer();
-		
-		System.out.print("Enter time:");
-		
-		income = scan.nextLong();
-		
-		timer.scheduleAtFixedRate(new TimerTask() {
-				@Override
-				public void run() {
-		        	System.out.println("System time: \t" + new Date());
-		        	completeTask();
-		    	}
-		 
-		    	private void completeTask() {
-		        	try {
-		            	// допустим, выполнение займет 20 секунд
-		            	Thread.sleep(1000);
-//		        		playMusic();
-		        	} catch (InterruptedException e) {
-		        		e.printStackTrace();
-		        	}
-		    	}
-		    	
-//		    	private void playMusic() {
-//		    		String bip = "Believer.mp3";
-//		    		Media hit = new Media(new File(bip).toURI().toString());
-//		    		MediaPlayer mediaPlayer = new MediaPlayer(hit);
-//		    		mediaPlayer.play();
-//		    	}
-			},0, 1*1000);
-		
-		// вызываем cancel() через какое-то время
-        try {
-            Thread.sleep(income * 1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        timer.cancel();
-        System.out.println("TimerTask cancel");
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        
-        playMusic();
-        
+		Application.launch(args);
+
 	}
-	
+
 	private static void playMusic() {
-		String bip = "Believer.mp3";
-		Media hit = new Media(new File(bip).toURI().toString());
-		MediaPlayer mediaPlayer = new MediaPlayer(hit);
+
+		Media hit = new Media(file.toURI().toString());
+		mediaPlayer = new MediaPlayer(hit);
+		System.out.println("Music play");
+
+		// System.out.println("Duration = " + file.length());
+
+		mediaPlayer.setStopTime(Duration.seconds(income));
+		mediaPlayer.setAutoPlay(true);
+		clock();
+		// mediaPlayer.stop();
+		// System.out.println("Music stoped");
+	}
+
+	private static void alarm() {
+
+		Media alarm = new Media(new File("Clock.mp3").toURI().toString());
+		mediaPlayer = new MediaPlayer(alarm);
+		System.out.println("Alarm!!!");
+
 		mediaPlayer.play();
 	}
 
+//	private static void getsize(File file) {
+//		MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+//		metaRetriever.setDataSource(filePath);
+//	}
+
+	private static void clock() {
+
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+
+				while (true) {
+
+					if (sec == income) {
+						mediaPlayer.stop();
+						mediaPlayer = null;
+						alarm();
+						break;
+					}
+
+					System.out.println(sec);
+					sec++;
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+			}
+
+		});
+		t.start();
+	}
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+
+		System.out.print("Enter time:");
+		income = scan.nextLong();
+
+		file = fileChooser.showOpenDialog(primaryStage);
+
+		playMusic();
+
+	}
+
 }
+/*
+ * 
+ *
+ * */
