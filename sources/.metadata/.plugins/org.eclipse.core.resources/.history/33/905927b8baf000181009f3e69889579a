@@ -61,6 +61,10 @@ public class Qwerty extends javafx.application.Application {
 		initDuration(0);
 		
 		mediaPlayer = players.get(0);
+		 
+		for (int i = 0; i < audioDurations.size();i++) {
+			System.out.println("Track №" + i + " = " + audioDurations.get(i));
+		}
 		
 		controlTime = audioDurations.get(0);
 
@@ -107,8 +111,8 @@ public class Qwerty extends javafx.application.Application {
 		try {
 			Media hit;
 			
-			for (int j = i; j < files.size(); j++) {
-				hit = new Media(files.get(j).toURI().toString());
+			for (; i < files.size(); i++) {
+				hit = new Media(files.get(i).toURI().toString());
 				players.add(createPlayer(hit));
 			}
 			
@@ -119,10 +123,6 @@ public class Qwerty extends javafx.application.Application {
 				audioDurations.add(i, length);
 			}
 			System.out.println("Length of this mp3 is: " + trackSize + " seconds");
-			
-			for (int j = 0; j < audioDurations.size();j++) {
-				System.out.println("Track №" + j + " = " + audioDurations.get(j));
-			}
 		} catch (UnsupportedTagException e) {
 			e.printStackTrace();
 		} catch (InvalidDataException e) {

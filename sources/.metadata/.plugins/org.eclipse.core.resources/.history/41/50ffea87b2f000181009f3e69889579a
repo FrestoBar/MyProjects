@@ -33,13 +33,14 @@ public class Qwerty extends javafx.application.Application {
 	private static Long trackSize = 0L;
 	private static List<File> files;
 	private static ChangeListener<Duration> progressChangeListener;
-	private static List<Long> audioDurations;
+	private static Long[] audioDurations;
 	private static int songIndex = 1;
 	private static Long controlTime = 0L;
 	private static List<MediaPlayer> players;
 
 	public static void main(String[] args) {
 		Application.launch(args);
+
 	}
 
 	private static MediaPlayer createPlayer(Media aMediaSrc) {
@@ -54,39 +55,56 @@ public class Qwerty extends javafx.application.Application {
 	}
 
 	private static void playMusic() {
+		Media hit;
 
 		players = new ArrayList<MediaPlayer>();
+		for (int i = 0; i < files.size(); i++) {
+			hit = new Media(files.get(i).toURI().toString());
+			players.add(createPlayer(hit));
+		}
+
+
+		 mediaPlayer = players.get(0);
+		try {
+
+			for (int i = 0; i < files.size(); i++) {
+				Mp3File mp3file = new Mp3File(files.get(i));
+				Long length = mp3file.getLengthInSeconds();
+				trackSize += length;
+				audioDurations[i] = length;
+			}
+			System.out.println("Length of this mp3 is: " + trackSize + " seconds");
+		} catch (UnsupportedTagException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
+		for (int i = 0; i < audioDurations.length;i++) {
+			System.out.println("Track №" + i + " = " + audioDurations[i]);
+		}
 		
-		initDuration(0);
-		
-		mediaPlayer = players.get(0);
-		
-		controlTime = audioDurations.get(0);
+		controlTime = audioDurations[0];
 
 		System.out.println("Track size " + trackSize + " Income " + income);
 		if (trackSize <= income) {
-			
 			System.out.println("Do you want to choose one more?");
 			scan.nextLine();
 			String yesOrNo = scan.nextLine();
-			
 			if (yesOrNo.equalsIgnoreCase("y") || yesOrNo.equalsIgnoreCase("yes")) {
-				
-				System.out.println("Please choose " + (income / 180) + " songs");
+				System.out.println("\nPlease choose " + (income / 180) + " songs");
 				fileChooser = new FileChooser();
-				List<File> temp = files;
-				files = new ArrayList<>();
-				files.addAll(temp);
-				files.addAll(fileChooser.showOpenMultipleDialog(null));
-				
-
+				int index = files.size();
+				System.out.println("File chooser = " + fileChooser.showOpenMultipleDialog(null));
+				files.addAll( index, fileChooser.showOpenMultipleDialog(null));
 				for (int i = 0; i < files.size(); i++) {
 					System.out.println("Track name: " + files.get(i));
 				}
-				
-				initDuration(temp.size());
-				
 			} else {
 				System.out.println("\nOkey song cycled");
 			}
@@ -100,36 +118,6 @@ public class Qwerty extends javafx.application.Application {
 		 mediaPlayer.setAutoPlay(true);
 		 clock();
 
-	}
-	
-	private static void initDuration(int i) {
-		
-		try {
-			Media hit;
-			
-			for (int j = i; j < files.size(); j++) {
-				hit = new Media(files.get(j).toURI().toString());
-				players.add(createPlayer(hit));
-			}
-			
-			for (; i < files.size(); i++) {
-				Mp3File mp3file = new Mp3File(files.get(i));
-				Long length = mp3file.getLengthInSeconds();
-				trackSize += length;
-				audioDurations.add(i, length);
-			}
-			System.out.println("Length of this mp3 is: " + trackSize + " seconds");
-			
-			for (int j = 0; j < audioDurations.size();j++) {
-				System.out.println("Track №" + j + " = " + audioDurations.get(j));
-			}
-		} catch (UnsupportedTagException e) {
-			e.printStackTrace();
-		} catch (InvalidDataException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	private static void alarm() {
@@ -160,7 +148,7 @@ public class Qwerty extends javafx.application.Application {
 						mediaPlayer.stop();
 						mediaPlayer = null;
 						changeSong();
-						controlTime += audioDurations.get(songIndex++);
+						controlTime += audioDurations[songIndex++];
 					}
 
 					System.out.println(sec);
@@ -194,7 +182,7 @@ public class Qwerty extends javafx.application.Application {
 		files = fileChooser.showOpenMultipleDialog(null);
 		System.out.println(files);
 		
-		audioDurations = new ArrayList<Long>();
+		audioDurations = new Long[files.size()];
 		
 		playMusic();
 

@@ -54,13 +54,22 @@ public class Qwerty extends javafx.application.Application {
 	}
 
 	private static void playMusic() {
+		Media hit;
 
 		players = new ArrayList<MediaPlayer>();
-		
+		for (int i = 0; i < files.size(); i++) {
+			hit = new Media(files.get(i).toURI().toString());
+			players.add(createPlayer(hit));
+		}
+
+
+		 mediaPlayer = players.get(0);
 		
 		initDuration(0);
-		
-		mediaPlayer = players.get(0);
+		 
+		for (int i = 0; i < audioDurations.size();i++) {
+			System.out.println("Track №" + i + " = " + audioDurations.get(i));
+		}
 		
 		controlTime = audioDurations.get(0);
 
@@ -79,14 +88,12 @@ public class Qwerty extends javafx.application.Application {
 				files = new ArrayList<>();
 				files.addAll(temp);
 				files.addAll(fileChooser.showOpenMultipleDialog(null));
-				
+				System.out.println("Everything Okey");
 
 				for (int i = 0; i < files.size(); i++) {
 					System.out.println("Track name: " + files.get(i));
 				}
-				
 				initDuration(temp.size());
-				
 			} else {
 				System.out.println("\nOkey song cycled");
 			}
@@ -103,15 +110,8 @@ public class Qwerty extends javafx.application.Application {
 	}
 	
 	private static void initDuration(int i) {
-		
 		try {
-			Media hit;
-			
-			for (int j = i; j < files.size(); j++) {
-				hit = new Media(files.get(j).toURI().toString());
-				players.add(createPlayer(hit));
-			}
-			
+
 			for (; i < files.size(); i++) {
 				Mp3File mp3file = new Mp3File(files.get(i));
 				Long length = mp3file.getLengthInSeconds();
@@ -119,10 +119,6 @@ public class Qwerty extends javafx.application.Application {
 				audioDurations.add(i, length);
 			}
 			System.out.println("Length of this mp3 is: " + trackSize + " seconds");
-			
-			for (int j = 0; j < audioDurations.size();j++) {
-				System.out.println("Track №" + j + " = " + audioDurations.get(j));
-			}
 		} catch (UnsupportedTagException e) {
 			e.printStackTrace();
 		} catch (InvalidDataException e) {
