@@ -1,10 +1,19 @@
 package first;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
-import javafx.application.Application;
+import com.mpatric.mp3agic.InvalidDataException;
+import com.mpatric.mp3agic.Mp3File;
+import com.mpatric.mp3agic.UnsupportedTagException;
 
+import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
@@ -20,25 +29,87 @@ public class Qwerty extends javafx.application.Application {
 	private static Long income = 0L;
 	private static Scanner scan = new Scanner(System.in);
 	private static int sec = 1;
+	private static Long trackSize = 0L;
+	private static List<File> files;
+	private static ChangeListener<Duration> progressChangeListener;
+	private static Long[] audioDurations;
+	private static int songIndex = 1;
+	private static Long controlTime = 0L;
+	private static List<MediaPlayer> players;
 
 	public static void main(String[] args) {
 		Application.launch(args);
 
 	}
 
+	private static MediaPlayer createPlayer(Media aMediaSrc) {
+		final MediaPlayer player = new MediaPlayer(aMediaSrc);
+		player.setOnError(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("Media error occurred: " + player.getError());
+			}
+		});
+		return player;
+	}
+
 	private static void playMusic() {
+		Media hit;
 
-		Media hit = new Media(file.toURI().toString());
-		mediaPlayer = new MediaPlayer(hit);
-		System.out.println("Music play");
+		players = new ArrayList<MediaPlayer>();
+		for (int i = 0; i < files.size(); i++) {
+			hit = new Media(files.get(i).toURI().toString());
+			players.add(createPlayer(hit));
+		}
 
-		// System.out.println("Duration = " + file.length());
 
-		mediaPlayer.setStopTime(Duration.seconds(income));
-		mediaPlayer.setAutoPlay(true);
-		clock();
-		// mediaPlayer.stop();
-		// System.out.println("Music stoped");
+		 mediaPlayer = players.get(0);
+		try {
+
+			for (int i = 0; i < files.size(); i++) {
+				Mp3File mp3file = new Mp3File(files.get(i));
+				Long length = mp3file.getLengthInSeconds();
+				trackSize += length;
+				audioDurations[i] = length;
+			}
+			System.out.println("Length of this mp3 is: " + trackSize + " seconds");
+		} catch (UnsupportedTagException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		for (int i = 0; i < audioDurations.length;i++) {
+			System.out.println("Track №" + i + " = " + audioDurations[i]);
+		}
+		
+		controlTime = audioDurations[0];
+
+		System.out.println("Track size " + trackSize + " Income " + income);
+		if (trackSize <= income) {
+			System.out.println("Do you want to choose one more?");
+			scan.nextLine();
+			String yesOrNo = scan.nextLine();
+			if (yesOrNo.equalsIgnoreCase("y") || yesOrNo.equalsIgnoreCase("yes")) {
+				System.out.println("\nPlease choose " + (income / 180) + " songs");
+			} else {
+				System.out.println("\nOkey song cycled");
+			}
+		} else if (trackSize > income) {
+			System.out.println("Music play");
+		}
+
+		
+
+		// mediaPlayer.setStopTime(Duration.seconds(income));
+		 mediaPlayer.setAutoPlay(true);
+		 clock();
+
 	}
 
 	private static void alarm() {
@@ -49,11 +120,6 @@ public class Qwerty extends javafx.application.Application {
 
 		mediaPlayer.play();
 	}
-
-//	private static void getsize(File file) {
-//		MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
-//		metaRetriever.setDataSource(filePath);
-//	}
 
 	private static void clock() {
 
@@ -69,6 +135,12 @@ public class Qwerty extends javafx.application.Application {
 						mediaPlayer = null;
 						alarm();
 						break;
+					}else if(sec == controlTime) {
+						
+						mediaPlayer.stop();
+						mediaPlayer = null;
+						changeSong();
+						controlTime += audioDurations[songIndex++];
 					}
 
 					System.out.println(sec);
@@ -86,6 +158,11 @@ public class Qwerty extends javafx.application.Application {
 		});
 		t.start();
 	}
+	
+	private static void changeSong() {
+		mediaPlayer = players.get(songIndex);
+		mediaPlayer.play();
+	}
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -93,8 +170,12 @@ public class Qwerty extends javafx.application.Application {
 		System.out.print("Enter time:");
 		income = scan.nextLong();
 
-		file = fileChooser.showOpenDialog(primaryStage);
-
+		// file = fileChooser.showOpenDialog(primaryStage);
+		files = fileChooser.showOpenMultipleDialog(primaryStage);
+		System.out.println(files);
+		
+		audioDurations = new Long[files.size()];
+		
 		playMusic();
 
 	}

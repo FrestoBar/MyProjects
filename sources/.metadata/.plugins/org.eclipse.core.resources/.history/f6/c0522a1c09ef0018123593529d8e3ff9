@@ -1,0 +1,142 @@
+package first;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Scanner;
+
+import com.mpatric.mp3agic.InvalidDataException;
+import com.mpatric.mp3agic.Mp3File;
+import com.mpatric.mp3agic.UnsupportedTagException;
+
+import javafx.application.Application;
+
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+
+public class Qwerty extends javafx.application.Application {
+
+	private static MediaPlayer mediaPlayer;
+	private static File file;
+	private static final FileChooser fileChooser = new FileChooser();
+	private static Long income = 0L;
+	private static Scanner scan = new Scanner(System.in);
+	private static int sec = 1;
+	private static Long trackSize = 0L;
+
+	public static void main(String[] args) {
+		Application.launch(args);
+
+	}
+
+	private static void playMusic() {
+
+		Media hit = new Media(file.toURI().toString());
+		mediaPlayer = new MediaPlayer(hit);
+		
+		try {
+			
+			Mp3File mp3file = new Mp3File(file);
+			trackSize = mp3file.getLengthInSeconds();
+			System.out.println("Length of this mp3 is: " + trackSize + " seconds");
+			
+		} catch (UnsupportedTagException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println(trackSize > income);
+		if(trackSize <= income) {
+			System.out.println("Music play");	
+		}else if (trackSize > income) {
+			System.out.println("Do you want to choose one more?");
+			String yesOrNo = scan.nextLine();
+			if (yesOrNo.equalsIgnoreCase("y") || yesOrNo.equalsIgnoreCase("yes") )
+			{
+				System.out.println("Please choose " + (income / 180) + " songs");
+			}else {
+				System.out.println("Okey song cycled");
+			}
+		}
+		
+		// System.out.println("Duration = " + file.length());
+
+		mediaPlayer.setStopTime(Duration.seconds(income));
+		mediaPlayer.setAutoPlay(true);
+		clock();
+		// mediaPlayer.stop();
+		// System.out.println("Music stoped");
+	}
+
+	private static void alarm() {
+
+		Media alarm = new Media(new File("Clock.mp3").toURI().toString());
+		mediaPlayer = new MediaPlayer(alarm);
+		System.out.println("Alarm!!!");
+
+		mediaPlayer.play();
+	}
+
+//	private static void getsize(File file) {
+//		MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+//		metaRetriever.setDataSource(filePath);
+//	}
+
+	private static void clock() {
+
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+
+				while (true) {
+
+					if (sec == income) {
+						mediaPlayer.stop();
+						mediaPlayer = null;
+						alarm();
+						break;
+					}
+
+					System.out.println(sec);
+					sec++;
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+			}
+
+		});
+		t.start();
+	}
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+
+		System.out.print("Enter time:");
+		income = scan.nextLong();
+
+		file = fileChooser.showOpenDialog(primaryStage);
+
+		playMusic();
+
+	}
+
+}
+/*
+ * 
+ *
+ * */
